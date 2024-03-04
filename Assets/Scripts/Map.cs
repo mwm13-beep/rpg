@@ -6,9 +6,9 @@ using UnityEngine.Tilemaps;
 
 public class Map : MonoBehaviour
 {
-    public int width;
-    public int height;
-    int cellSize;
+    [SerializeField] int width = 18;
+    [SerializeField] int height = 10;
+    [SerializeField] int cellSize = 1;
     Node[,] nodes;
     List<Unit> units;
 
@@ -20,14 +20,11 @@ public class Map : MonoBehaviour
             throw new Exception("Grid component not found on Map");
         }
 
-        Tilemap objectsTilemap = grid.transform.Find("Objects").GetComponent<Tilemap>();
+        Tilemap objectsTilemap = grid.transform.Find("Objects Collision").GetComponent<Tilemap>();
         if (objectsTilemap == null)
         {
             throw new Exception("Tilemap component not found on Objects");
         }
-        width = 18;
-        height = 10;
-        cellSize = 1;
 
         nodes = new Node[width, height];
         units = new List<Unit>();
@@ -36,10 +33,10 @@ public class Map : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                Vector3Int worldPosition = new Vector3Int(x * cellSize, y * cellSize);
-                bool hastTile = objectsTilemap.HasTile(objectsTilemap.WorldToCell(worldPosition));
+                Vector3Int worldPosition = new Vector3Int(x * cellSize, y * cellSize, 0);
+                bool hasObject = objectsTilemap.HasTile(objectsTilemap.WorldToCell(worldPosition));
                 bool hasUnit = HasUnit(worldPosition);
-                bool walkable = !hastTile && !hasUnit;
+                bool walkable = !hasObject && !hasUnit;
                 nodes[x, y] = new Node(walkable, worldPosition, x, y);
 
                 // Draw a line at the location of each node
@@ -101,5 +98,10 @@ public class Map : MonoBehaviour
     public Vector3Int ConvertWorldToGrid(float x, float y)
     {
         return new Vector3Int((int)(x + cellSize * width / 2), (int)(y + cellSize * height / 2), 0);
+    }
+
+    public Vector3Int ConvertGridToWorld(int x, int y)
+    {
+        return new Vector3Int(x - width / 2, y - height / 2, 0);
     }
 }

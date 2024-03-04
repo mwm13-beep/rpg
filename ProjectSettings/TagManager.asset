@@ -47,6 +47,9 @@ TagManager:
   - name: Units
     uniqueID: 1282586737
     locked: 0
-  - name: Objects
+  - name: Objects No Collision
+    uniqueID: 2933647065
+    locked: 0
+  - name: Objects Collision
     uniqueID: 3396941013
     locked: 0

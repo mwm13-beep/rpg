@@ -14,6 +14,16 @@ public class Unit : MonoBehaviour
     Vector3Int position;
     Map currentMap;
 
+    /* 
+        TO DO: 
+        1. Implement limited movement (based on move attribute)
+        2. Visualize movement range (highlight tiles and exclude non-walkable tiles)
+        3. Implement turns (player and AI turns..probably different classes for each)
+        4. Implement movement animations
+        5. Implement combat actions (attack, defend, wait, etc.)
+        6. Implement combat animations
+    */
+
     void Start()
     {
         Grid grid = transform.parent.GetComponent<Grid>();
@@ -22,8 +32,8 @@ public class Unit : MonoBehaviour
 
         if (currentMap != null && ground != null)
         {
-            Vector3Int worldPosition = currentMap.ConvertWorldToGrid(transform.position.x, transform.position.y);
-            position = grid.WorldToCell(worldPosition);
+            Vector3Int gridPosition = currentMap.ConvertWorldToGrid(transform.position.x, transform.position.y);
+            position = grid.WorldToCell(gridPosition);
             Debug.Log("Position: " + position);
             currentMap.AddUnit(this);
         }
@@ -31,7 +41,19 @@ public class Unit : MonoBehaviour
         {
             throw new System.Exception("Map component not found on Map");
         }
-        Move(new Vector3Int(6, 5, 0));
+    }
+
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Grid grid = transform.parent.GetComponent<Grid>();
+            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector3Int gridPosition = currentMap.ConvertWorldToGrid(mousePosition.x, mousePosition.y);
+            Vector3Int newPosition = grid.WorldToCell(gridPosition);
+            Debug.Log("Clicked on " + newPosition);
+            Move(newPosition);
+        }
     }
 
     public void Move(Vector3Int newPos)
@@ -50,17 +72,28 @@ public class Unit : MonoBehaviour
 
     IEnumerator MoveAlongPath(List<Node> path)
     {
-        foreach (Node node in path)
+        for (int i = 0; i < path.Count; i++)
         {
-            Vector3Int targetPosition = node.position; // Assuming Node has a position property
+            if (i < path.Count - 1)
+            {
+                Debug.DrawLine(path[i].position, path[i + 1].position, Color.red, 100f);
+            }
+
+            Vector3 targetPosition = GetCenteredPosition(path[i].position); // Assuming Node has a position property
             while (transform.position != targetPosition)
             {
                 transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
                 yield return null; // Wait for the next frame
             }
+            Debug.Log("Moved to " + path[i].position);
         }
+    }
 
-        Debug.Log("Moved to " + path[path.Count - 1].position);
+    Vector3 GetCenteredPosition(Vector3 position)
+    {
+        position.x += .5f;
+        position.y += .5f;
+        return position;
     }
 
     public void Attack(Unit target)
